@@ -2,7 +2,7 @@
 
 CareFlow is a compact healthcare workflow cockpit for discharge readiness, clinical coordination and event auditability. The app uses de-identified reference cases only; it does not contain real patient information.
 
-It was built as a focused implementation slice for an Angular / JavaEE-style healthcare project:
+It was built as a focused working product for an Angular / JavaEE-style healthcare project:
 
 - Angular 22 with standalone components and signals
 - Jakarta REST API on Quarkus 3 / Java 21
@@ -19,6 +19,7 @@ CareFlow helps a team see what blocks the next clinical step:
 - Medication review and lab dependencies
 - Structured clinical note creation through the API
 - Audit timeline for Kafka-ready clinical events
+- Workspace access registration with SMTP notification
 
 The data model intentionally uses internal case identifiers such as `CF-1024` instead of real patient data.
 
@@ -66,6 +67,7 @@ GET /api/status
 GET /api/cases
 GET /api/cases/{caseId}
 POST /api/cases/{caseId}/notes
+POST /api/registrations
 GET /api/events
 GET /q/health
 ```
@@ -78,6 +80,8 @@ Example note payload:
   "body": "Medication reconciliation requested before discharge."
 }
 ```
+
+Access requests are validated by the API and sent through SMTP configured on the server. Required deployment variables include `QUARKUS_MAILER_HOST`, `QUARKUS_MAILER_PORT`, `QUARKUS_MAILER_USERNAME`, `QUARKUS_MAILER_PASSWORD`, `QUARKUS_MAILER_FROM` and `APP_REGISTRATION_NOTIFY_TO`.
 
 ## Docker
 

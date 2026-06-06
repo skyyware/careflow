@@ -32,6 +32,8 @@
         <strong>Event stream</strong>
       </article>
     </div>
+
+    <button type="button" class="access-trigger" (click)="accessRequestOpen.set(true)">Request access</button>
   </header>
 
   <section class="summary-strip">
@@ -302,3 +304,48 @@
     }
   </section>
 </main>
+
+@if (accessRequestOpen()) {
+  <div class="access-backdrop" role="presentation">
+    <section class="access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title">
+      <button type="button" class="dialog-close" aria-label="Close access request" (click)="accessRequestOpen.set(false)">Close</button>
+      @if (registrationState() === 'sent') {
+        <div class="access-success">
+          <h2 id="access-title">Access request received</h2>
+          <p>I will follow up with a review path for the clinical workflow context.</p>
+          <button type="button" (click)="accessRequestOpen.set(false)">Done</button>
+        </div>
+      } @else {
+        <form class="access-form" (ngSubmit)="submitRegistration()">
+          <div>
+            <span>Workspace access</span>
+            <h2 id="access-title">Request CareFlow access</h2>
+            <p>Register a project context for a guided Healthcare workflow review.</p>
+          </div>
+          <label>
+            Name
+            <input [ngModel]="registration().name" (ngModelChange)="updateRegistration('name', $event)" name="name" required />
+          </label>
+          <label>
+            Work email
+            <input type="email" [ngModel]="registration().email" (ngModelChange)="updateRegistration('email', $event)" name="email" required />
+          </label>
+          <label>
+            Company / team
+            <input [ngModel]="registration().company" (ngModelChange)="updateRegistration('company', $event)" name="company" required />
+          </label>
+          <label>
+            Healthcare context
+            <textarea [ngModel]="registration().useCase" (ngModelChange)="updateRegistration('useCase', $event)" name="useCase" required></textarea>
+          </label>
+          @if (registrationError()) {
+            <p class="access-error">{{ registrationError() }}</p>
+          }
+          <button type="submit" [disabled]="registrationState() === 'submitting'">
+            {{ registrationState() === 'submitting' ? 'Sending...' : 'Send access request' }}
+          </button>
+        </form>
+      }
+    </section>
+  </div>
+}

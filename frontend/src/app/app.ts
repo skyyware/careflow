@@ -69,6 +69,13 @@ interface PlatformStatus {
   generatedAt: string;
 }
 
+interface RegistrationPayload {
+  name: string;
+  email: string;
+  company: string;
+  useCase: string;
+}
+
 const fallbackCases: CareCase[] = [
   {
     id: 'case-discharge-1024',
@@ -122,8 +129,8 @@ const fallbackStatus: PlatformStatus = {
   openCases: fallbackCases.length,
   highPriorityCases: 1,
   pendingLabResults: 1,
-  eventStream: 'local preview',
-  deployment: 'static fallback',
+  eventStream: 'preview stream',
+  deployment: 'stage-ready fallback',
   generatedAt: new Date().toISOString()
 };
 
@@ -146,6 +153,15 @@ export class App implements OnInit {
   readonly savingNote = signal(false);
   readonly saveError = signal('');
   readonly lastSavedAt = signal('');
+  readonly accessRequestOpen = signal(false);
+  readonly registration = signal<RegistrationPayload>({
+    name: '',
+    email: '',
+    company: '',
+    useCase: ''
+  });
+  readonly registrationState = signal<'idle' | 'submitting' | 'sent'>('idle');
+  readonly registrationError = signal('');
 
   readonly wards = computed(() => ['All wards', ...new Set(this.cases().map((careCase) => careCase.ward))]);
   readonly priorities = computed(() => ['All', 'Critical', 'High', 'Medium', 'Low']);
@@ -219,9 +235,37 @@ export class App implements OnInit {
       this.apiState.set('online');
     } catch {
       this.apiState.set('fallback');
-      this.saveError.set('Note could not be synced. The local UI stayed available.');
+      this.saveError.set('Note could not be synced. The workspace stayed available.');
     } finally {
       this.savingNote.set(false);
+    }
+  }
+
+  updateRegistration(field: keyof RegistrationPayload, value: string): void {
+    this.registration.update((current) => ({ ...current, [field]: value }));
+    this.registrationError.set('');
+  }
+
+  async submitRegistration(): Promise<void> {
+    const payload = this.registration();
+    if (this.registrationState() === 'submitting') {
+      return;
+    }
+
+    this.registrationState.set('submitting');
+    this.registrationError.set('');
+
+    try {
+      await this.request('/api/registrations', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      this.registrationState.set('sent');
+      this.apiState.set('online');
+    } catch {
+      this.registrationState.set('idle');
+      this.registrationError.set('Access request could not be sent.');
+      this.apiState.set('fallback');
     }
   }
 
