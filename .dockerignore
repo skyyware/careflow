@@ -1,0 +1,11 @@
+.git
+.deploy
+.DS_Store
+frontend/.angular
+frontend/dist
+frontend/node_modules
+backend/target
+node_modules
+dist
+target
+*.log

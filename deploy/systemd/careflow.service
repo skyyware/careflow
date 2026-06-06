@@ -1,0 +1,15 @@
+[Unit]
+Description=CareFlow healthcare workflow cockpit
+After=network.target
+
+[Service]
+User=sasha
+WorkingDirectory=/srv/www/careflow.stage.dev/current/quarkus-app
+Environment=PORT=8097
+ExecStart=/usr/bin/java -jar /srv/www/careflow.stage.dev/current/quarkus-app/quarkus-run.jar
+Restart=always
+RestartSec=5
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

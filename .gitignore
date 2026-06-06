@@ -1,0 +1,13 @@
+.DS_Store
+.deploy
+.angular
+node_modules
+dist
+target
+*.tsbuildinfo
+frontend/.angular
+frontend/dist
+frontend/node_modules
+backend/target
+backend/src/main/resources/META-INF/resources/*
+!backend/src/main/resources/META-INF/resources/.gitkeep

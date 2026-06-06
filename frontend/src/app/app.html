@@ -1,0 +1,304 @@
+<main class="app-shell">
+  <header class="topbar">
+    <div class="brand-lockup">
+      <span class="menu-mark" aria-hidden="true"></span>
+      <div>
+        <strong class="brand">CareFlow</strong>
+        <span>Healthcare workflow cockpit</span>
+      </div>
+    </div>
+
+    <label class="global-search">
+      <span>Search</span>
+      <input
+        type="search"
+        placeholder="Search cases"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+    </label>
+
+    <div class="runtime-strip" aria-label="Runtime status">
+      <article>
+        <span>API</span>
+        <strong [class.online]="apiState() === 'online'">{{ apiState() === 'online' ? 'Online' : 'Fallback' }}</strong>
+      </article>
+      <article>
+        <span>Kubernetes</span>
+        <strong>Ready</strong>
+      </article>
+      <article>
+        <span>Kafka</span>
+        <strong>Event stream</strong>
+      </article>
+    </div>
+  </header>
+
+  <section class="summary-strip">
+    <article>
+      <span>Open cases</span>
+      <strong>{{ status().openCases }}</strong>
+    </article>
+    <article>
+      <span>High priority</span>
+      <strong>{{ status().highPriorityCases }}</strong>
+    </article>
+    <article>
+      <span>Pending labs</span>
+      <strong>{{ status().pendingLabResults }}</strong>
+    </article>
+    <article>
+      <span>Event stream</span>
+      <strong>{{ status().eventStream }}</strong>
+    </article>
+  </section>
+
+  <section class="workspace">
+    <aside class="panel filters" id="worklist">
+      <div class="panel-header">
+        <div>
+          <h1>Clinical Worklist</h1>
+          <p>Synthetic care-pathway data, no real PII.</p>
+        </div>
+      </div>
+
+      <label>
+        Ward / Unit
+        <select [ngModel]="wardFilter()" (ngModelChange)="wardFilter.set($event)">
+          @for (ward of wards(); track ward) {
+            <option [value]="ward">{{ ward }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="priority-tabs" aria-label="Priority filter">
+        @for (priority of priorities(); track priority) {
+          <button type="button" [class.active]="priorityFilter() === priority" (click)="setPriority(priority)">
+            <span>{{ priority }}</span>
+            <strong>{{ priorityCount(priority) }}</strong>
+          </button>
+        }
+      </div>
+
+      <div class="case-list">
+        @for (careCase of filteredCases(); track careCase.id) {
+          <button type="button" [class.selected]="selectedCase()?.id === careCase.id" (click)="selectCase(careCase.id)">
+            <span class="case-priority-label" [class]="priorityClass(careCase.priority)">{{ careCase.priority }} priority</span>
+            <div class="case-line">
+              <strong>{{ careCase.patientCode }}</strong>
+              <span class="score">{{ careCase.readinessScore }}</span>
+            </div>
+            <span>{{ careCase.pathway }}</span>
+            <small>{{ careCase.ward }} &middot; {{ careCase.slaMinutes }}m SLA &middot; {{ careCase.status }}</small>
+            <em>{{ careCase.riskFlags.length }} risk flags</em>
+          </button>
+        } @empty {
+          <p class="empty-state">No cases match the current filters.</p>
+        }
+      </div>
+    </aside>
+
+    @if (selectedCase(); as careCase) {
+      <section class="center-column">
+        <section class="panel selected-case">
+          <div class="panel-header">
+            <div>
+              <p class="overline">{{ careCase.pathway }} &gt; {{ careCase.patientCode }}</p>
+              <h2>{{ careCase.patientCode }}</h2>
+              <p>{{ careCase.ward }} &middot; Synthetic case &middot; Updated {{ formatUpdated(careCase.updatedAt) }}</p>
+            </div>
+            <div class="owner-card">
+              <span>Owner</span>
+              <strong>{{ careCase.owner }}</strong>
+            </div>
+          </div>
+
+          <div class="case-meta">
+            <article>
+              <span>Readiness Score</span>
+              <strong>{{ careCase.readinessScore }}<small>/100</small></strong>
+            </article>
+            <article>
+              <span>Status</span>
+              <strong>{{ careCase.status }}</strong>
+            </article>
+            <article>
+              <span>Open Tasks</span>
+              <strong>{{ unresolvedChecklistItems() }}</strong>
+            </article>
+            <article>
+              <span>Risk Flags</span>
+              <strong>{{ riskCount() }}</strong>
+            </article>
+          </div>
+
+          <div class="risk-row">
+            @for (flag of careCase.riskFlags; track flag) {
+              <span>{{ flag }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="panel readiness-panel" id="readiness">
+          <div class="panel-header">
+            <div>
+              <h2>Discharge Readiness Checklist</h2>
+              <p>Tasks that block or release the next clinical step.</p>
+            </div>
+            <span class="completion">{{ completedChecklistItems() }} of {{ totalChecklistItems() }} complete ({{ completion() }}%)</span>
+          </div>
+
+          <div class="checklist">
+            @for (item of careCase.checklist; track item.id) {
+              <article [class.done]="item.done">
+                <span class="checkmark">{{ item.done ? 'OK' : '' }}</span>
+                <div>
+                  <strong>{{ item.label }}</strong>
+                  <small>{{ item.owner }}</small>
+                </div>
+                <span class="task-state">{{ item.done ? 'Done' : 'Pending' }}</span>
+              </article>
+            }
+          </div>
+        </section>
+
+        <section class="panel note-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Clinical note</h2>
+              <p>Add a structured note to the selected care case.</p>
+            </div>
+          </div>
+          <div class="note-grid">
+            <label>
+              Author
+              <input [ngModel]="noteAuthor()" (ngModelChange)="noteAuthor.set($event)" />
+            </label>
+            <label>
+              Type
+              <select>
+                <option>Clinical note</option>
+                <option>Care coordination</option>
+                <option>Pharmacy review</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Note
+            <textarea [ngModel]="noteBody()" (ngModelChange)="noteBody.set($event)"></textarea>
+          </label>
+          <div class="note-actions">
+            <button type="button" (click)="addNote()" [disabled]="savingNote() || !noteBody().trim()">
+              {{ savingNote() ? 'Saving note...' : 'Save note' }}
+            </button>
+            @if (lastSavedAt()) {
+              <span>Last saved {{ lastSavedAt() }}</span>
+            }
+            @if (saveError()) {
+              <span class="error">{{ saveError() }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="panel tabs-panel">
+          <nav aria-label="Case sections">
+            <a class="active" href="#readiness">Clinical Summary</a>
+            <a href="#readiness">Orders</a>
+            <a href="#audit">Notes</a>
+            <a href="#audit">Activity</a>
+          </nav>
+          <div class="summary-grid">
+            <article><span>Medication</span><strong>{{ careCase.medicationReview.status }}</strong></article>
+            <article><span>Labs</span><strong>{{ careCase.labSignal.status }}</strong></article>
+            <article><span>Code status</span><strong>Full Code</strong></article>
+            <article><span>Mobility</span><strong>Ambulates</strong></article>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right-column">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Medication Review</h2>
+              <p>Updated by {{ careCase.medicationReview.lastReviewedBy }}.</p>
+            </div>
+          </div>
+
+          <div class="dependency-grid">
+            <article>
+              <span>Medication</span>
+              <strong>{{ careCase.medicationReview.status }}</strong>
+              <p>{{ careCase.medicationReview.nextAction }}</p>
+            </article>
+            <article>
+              <span>Open interactions</span>
+              <strong>{{ careCase.medicationReview.openInteractions }}</strong>
+              <p>{{ careCase.medicationReview.lastReviewedBy }}</p>
+            </article>
+            <article>
+              <span>Lab status</span>
+              <strong>{{ careCase.labSignal.status }}</strong>
+              <p>{{ careCase.labSignal.nextReview }}</p>
+            </article>
+            <article>
+              <span>Pending results</span>
+              <strong>{{ careCase.labSignal.pendingResults }}</strong>
+              <p>{{ careCase.labSignal.criticalFlag ? 'Critical review required' : 'No critical flag' }}</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel lab-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Lab Status</h2>
+              <p>{{ careCase.labSignal.nextReview }}</p>
+            </div>
+          </div>
+          <div class="lab-row">
+            <span>Pending results</span>
+            <strong>{{ careCase.labSignal.pendingResults }}</strong>
+          </div>
+          <div class="lab-row">
+            <span>Critical flag</span>
+            <strong>{{ careCase.labSignal.criticalFlag ? 'Yes' : 'No' }}</strong>
+          </div>
+        </section>
+
+        <section class="panel" id="audit">
+          <div class="panel-header">
+            <div>
+              <h2>Audit Timeline</h2>
+              <p>Kafka-ready clinical events and user actions.</p>
+            </div>
+          </div>
+
+          <div class="timeline">
+            @for (event of activeEvents(); track event.id) {
+              <article>
+                <span>{{ event.type }}</span>
+                <strong>{{ event.summary }}</strong>
+                <small>{{ event.source }}</small>
+              </article>
+            }
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Deployment</h2>
+              <p>{{ status().deployment }}</p>
+            </div>
+          </div>
+          <div class="deploy-list">
+            <article><span>Angular</span><strong>22</strong></article>
+            <article><span>Backend</span><strong>Jakarta REST / Quarkus</strong></article>
+            <article><span>Runtime</span><strong>Docker + Kubernetes</strong></article>
+          </div>
+        </section>
+      </aside>
+    }
+  </section>
+</main>

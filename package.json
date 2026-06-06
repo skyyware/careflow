@@ -1,0 +1,17 @@
+{
+  "name": "careflow",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "install:all": "npm --prefix frontend install",
+    "frontend:dev": "npm --prefix frontend start -- --host 0.0.0.0 --proxy-config proxy.conf.json",
+    "backend:dev": "mvn -f backend/pom.xml quarkus:dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "backend:test": "mvn -f backend/pom.xml test",
+    "check": "mvn -f backend/pom.xml test && npm --prefix frontend run build",
+    "build": "node scripts/build-production.mjs",
+    "deploy:stage": "npm run build && node scripts/deploy-stage.mjs"
+  },
+  "devDependencies": {}
+}
