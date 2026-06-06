@@ -68,22 +68,4 @@ class CareFlowResourceTest {
             .statusCode(400);
     }
 
-    @Test
-    void acceptsWorkspaceAccessRequests() {
-        given()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body("""
-                {
-                  "name": "Sascha Dobrochynskyy",
-                  "email": "sascha@skyyware.com",
-                  "company": "Skyyware",
-                  "useCase": "Review CareFlow as a Healthcare workflow cockpit with Angular and Java."
-                }
-                """)
-            .when().post("/api/registrations")
-            .then()
-            .statusCode(200)
-            .body("status", equalTo("received"))
-            .body("receivedAt", notNullValue());
-    }
 }

@@ -16,11 +16,9 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class CareFlowResource {
     private final CareFlowStore store;
-    private final RegistrationMailer registrationMailer;
 
-    public CareFlowResource(CareFlowStore store, RegistrationMailer registrationMailer) {
+    public CareFlowResource(CareFlowStore store) {
         this.store = store;
-        this.registrationMailer = registrationMailer;
     }
 
     @GET
@@ -57,9 +55,4 @@ public class CareFlowResource {
         return store.events();
     }
 
-    @POST
-    @Path("/registrations")
-    public RegistrationResponse register(@Valid RegistrationRequest request) {
-        return registrationMailer.register(request);
-    }
 }
