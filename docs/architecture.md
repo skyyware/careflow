@@ -16,12 +16,12 @@ The Angular app is a single operational screen with local UI state managed throu
 The backend exposes a Jakarta REST API with Quarkus:
 
 - `CareFlowResource` owns the HTTP surface.
-- `CareFlowStore` owns the synthetic in-memory data and update behavior.
+- `CareFlowStore` owns the de-identified reference data and update behavior.
 - Java records model immutable case, event, lab, medication and checklist data.
 - Bean validation rejects empty clinical notes.
 - Quarkus health endpoints support container and Kubernetes probes.
 
-The current persistence layer is intentionally in-memory because the proof focuses on workflow, API contract and deployment. A database adapter can be introduced behind the same store boundary without changing the UI contract.
+The current persistence layer is intentionally in-memory because this implementation focuses on workflow, API contract and deployment. A database adapter can be introduced behind the same store boundary without changing the UI contract.
 
 ## Event stream
 
@@ -29,7 +29,7 @@ Timeline entries model Kafka-style clinical events. A real broker integration ca
 
 ## Data safety
 
-The application contains no real patient data. Every patient-like identifier is synthetic and intentionally limited to internal case codes such as `CF-1024`.
+The application contains no real patient data. Every patient-like identifier is de-identified and intentionally limited to internal case codes such as `CF-1024`.
 
 ## Stage isolation
 

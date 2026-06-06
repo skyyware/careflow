@@ -58,7 +58,7 @@
       <div class="panel-header">
         <div>
           <h1>Clinical Worklist</h1>
-          <p>Synthetic care-pathway data, no real PII.</p>
+          <p>Case workflow data without personal identifiers.</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@
             <div>
               <p class="overline">{{ careCase.pathway }} &gt; {{ careCase.patientCode }}</p>
               <h2>{{ careCase.patientCode }}</h2>
-              <p>{{ careCase.ward }} &middot; Synthetic case &middot; Updated {{ formatUpdated(careCase.updatedAt) }}</p>
+              <p>{{ careCase.ward }} &middot; Case record &middot; Updated {{ formatUpdated(careCase.updatedAt) }}</p>
             </div>
             <div class="owner-card">
               <span>Owner</span>

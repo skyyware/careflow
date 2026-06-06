@@ -187,7 +187,7 @@ public class CareFlowStore {
             ),
             new MedicationReview("Not started", 1, "Emergency Pharmacy", "Review anticoagulant history"),
             new LabSignal("Critical review", 1, true, "Doctor review required now"),
-            List.of(new ClinicalNote(UUID.randomUUID().toString(), "Triage", "Patient-code CF-3091 requires immediate observation handover. No real PII stored in this proof.", now.minusSeconds(360))),
+            List.of(new ClinicalNote(UUID.randomUUID().toString(), "Triage", "Patient-code CF-3091 requires immediate observation handover. No direct identifiers stored in this workspace.", now.minusSeconds(360))),
             List.of(
                 new CareEvent(UUID.randomUUID().toString(), "case-er-3091", "ALERT", "Critical lab review required", "lab-adapter", now.minusSeconds(330)),
                 new CareEvent(UUID.randomUUID().toString(), "case-er-3091", "SLA", "Handover SLA under 20 minutes", "workflow-engine", now.minusSeconds(240))

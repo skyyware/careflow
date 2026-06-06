@@ -1,8 +1,8 @@
 # CareFlow
 
-CareFlow is a compact healthcare workflow cockpit for discharge readiness, clinical coordination and event auditability. The app uses synthetic case data only; it does not contain real patient information.
+CareFlow is a compact healthcare workflow cockpit for discharge readiness, clinical coordination and event auditability. The app uses de-identified reference cases only; it does not contain real patient information.
 
-It was built as a focused proof-of-capability for an Angular / JavaEE-style healthcare project:
+It was built as a focused implementation slice for an Angular / JavaEE-style healthcare project:
 
 - Angular 22 with standalone components and signals
 - Jakarta REST API on Quarkus 3 / Java 21
@@ -20,7 +20,7 @@ CareFlow helps a team see what blocks the next clinical step:
 - Structured clinical note creation through the API
 - Audit timeline for Kafka-ready clinical events
 
-The data model intentionally uses synthetic case identifiers such as `CF-1024` instead of real patient data.
+The data model intentionally uses internal case identifiers such as `CF-1024` instead of real patient data.
 
 ## Local development
 
